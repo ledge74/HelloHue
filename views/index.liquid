@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>HelloHue</title>
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-select.min.css" rel="stylesheet">
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/bootstrap-select.min.js"></script>
+
+
+    <style>
+      .filter-option {
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+      }
+
+      .badge-custom {
+        height: 14px;
+        width: 14px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-light">
+
+    <div class="container">
+      <div class="py-5 text-center">
+        <h1>HelloHue</h1>
+        <p class="lead">Configure HelloHue to work with your setup.</p>
+        {% if messages.error %}
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ messages.error | join: ', ' }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endif %}
+        {% if messages.success %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ messages.success | join: ', ' }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>        
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <div class="col-4">
+          <div class="list-group" id="list-tab" role="tablist">
+            <a class="list-group-item list-group-item-action active d-flex justify-content-between align-items-center" id="list-home-list" data-toggle="list" href="#form-hue" role="tab" aria-controls="home">
+              Hue bridge
+              <span class="badge badge-{% if auth.isAuthenticated %}success{% else %}danger{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if auth.isAuthenticated %}Hue bridge connected{% else %}Hue bridge not reachable{% endif %}"> </span>
+            </a>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" id="list-profile-list" data-toggle="list" href="#form-location" role="tab" aria-controls="profile">
+              Location
+              <span class="badge badge-{% if config.location.latitude != '' and config.location.longitude != '' %}success{% else %}warning{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if config.location.latitude != '' and config.location.longitude != '' %}Location set{% else %}Location not set{% endif %}"> </span>
+            </a>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" id="list-profile-list" data-toggle="list" href="#form-hambisync" role="tab" aria-controls="profile">
+              HAmbiSync
+              <span class="badge badge-{% if config.hambisync.host != '' and config.hambisync.port != '' %}success{% else %}warning{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if config.hambisync.host != '' and config.hambisync.port != '' %}HAmbiSync configured{% else %}HAmbiSync not configured{% endif %}"> </span>
+            </a>
+            {% for room in config.rooms %}
+              <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" id="list-messages-list" data-toggle="list" href="#form-room{{ room.id }}" role="tab" aria-controls="messages">
+                {{ room.name }}
+                <span class="badge badge-{% if room.active %}success{% else %}warning{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if room.active %}Room is active{% else %}Room is inactive{% endif %}"> </span>
+              </a>
+            {% endfor %}
+          </div>
+          <a role="button" class="btn btn-outline-{% if hellohue.status %}danger{% else %}success{% endif %} btn-block" href="{% if hellohue.status %}/stop{% else %}/start{% endif %}" style="margin-top:20px">
+            {% if hellohue.status %}
+              Stop HelloHue
+            {% else %}
+              Start HelloHue
+            {% endif %}
+          </a>
+        </div>
+
+        <div class="col-8">
+          <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active card card-body" id="form-hue" role="tabpanel" aria-labelledby="form-hue-list">
+              <form action="/config/connect" method="POST">
+                <h4 class="mb-3">Hue bridge</h4>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="host">Host</label>
+                    <input type="text" class="form-control" id="host" name="host" placeholder="192.168.1.18" value="{{ config.hue.host }}" required pattern="((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$">
+                    <small class="form-text text-muted">
+                      Hue bridge IP address
+                    </small>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" placeholder="No username yet!" value="{{ config.hue.username }}" required disabled>
+                    <small class="form-text text-muted">
+                      Hue bridge username. Will have a value once connected
+                    </small>
+                  </div>
+                </div>
+                <hr class="mb-4">
+                <div class="alert alert-info" role="alert">
+                  <small>You need to press the button on your Hue BRIDGE <b>before</b> clicking "Connect to Hue bridge"</small>
+                </div>
+                <button class="btn btn-primary btn-lg btn-block" type="submit">Connect to Hue bridge</button>
+              </form>         
+            </div>
+            <div class="tab-pane fade card card-body" id="form-location" role="tabpanel" aria-labelledby="list-profile-list">
+              <form action="/config/location" method="POST">
+                <h4 class="mb-3">Location</h4>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="latitude">Latitude</label>
+                    <input type="text" class="form-control" id="latitude" name="latitude" placeholder="51.1" value="{{ config.location.latitude }}" pattern="-?\d{1,3}\.\d+">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="longitude">Longitude</label>
+                    <input type="text" class="form-control" id="longitude" name="longitude" placeholder="-4.23" value="{{ config.location.longitude }}" pattern="-?\d{1,3}\.\d+">
+                  </div>
+                </div>
+                <hr class="mb-4">
+                <button class="btn btn-primary btn-lg btn-block" type="submit">Save location</button>
+              </form>      
+            </div>
+            <div class="tab-pane fade card card-body" id="form-hambisync" role="tabpanel" aria-labelledby="list-profile-list">
+              <form action="/config/hambisync" method="POST">
+                <h4 class="mb-3">HAmbiSync</h4>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="latitude">Host</label>
+                    <input type="text" class="form-control" id="host" name="host" placeholder="127.0.0.1" value="{{ config.hambisync.host }}" pattern="((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="longitude">Port</label>
+                    <input type="text" class="form-control" id="port" name="port" placeholder="4567" value="{{ config.hambisync.port }}">
+                  </div>
+                </div>
+                <hr class="mb-4">
+                <button class="btn btn-primary btn-lg btn-block" type="submit">Save HAmbiSync</button>
+              </form>      
+            </div>
+            {% for room in config.rooms %}
+              <div class="tab-pane fade card card-body" id="form-room{{ room.id }}" role="tabpanel" aria-labelledby="list-messages-list">
+                <form action="/config/room/{{ room.id }}" method="POST">
+                  <h4 class="mb-3">{{ room.name }}</h4>
+                  <div class="row">
+                    <div class="col-md-12 mb-3">
+                      <label for="name">Friendly room name</label>
+                      <input type="text" class="form-control" id="name" name="name" placeholder="Living room" value="{{ room.name }}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label for="player">Plex Player name</label>
+                      <input type="text" class="form-control" id="player" name="player" placeholder="Chrome" value="{{ room.player }}" required>
+                      <small class="form-text text-muted">
+                        Restrict actions to a specific plex player
+                      </small>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                      <label for="users">Plex Users names</label>
+                      <input type="text" class="form-control" id="users" name="users" placeholder="MyAwesomePlexName" value="{{ room.users | join: ', ' }}">
+                      <small class="form-text text-muted">
+                        Restrict actions to specific plex user(s). Comma separated list of usernames, case sensitive  
+                      </small>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <label for="lights">Lights</label>
+                      <select name="lights" id="lights{{ room.id }}" class="selectpicker" data-width="100%" data-style="btn" multiple>
+                        {% for light in lights %}
+                          <option value="{{light.id}}">{{light.name}}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <label for="groups">Light groups</label>
+                      <select name="groups" id="groups{{ room.id }}" class="selectpicker" data-width="100%" data-style="btn" multiple>
+                        {% for group in groups %}
+                          <option value="{{group.id}}">{{group.name}}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="play">Play action</label>
+                      <select class="custom-select my-1 mr-sm-2" id="play" name="play">
+                        <option value="nothing" {% if room.play == "nothing" %} selected {% endif %}>Nothing</option>
+                        <option value="turn_on" {% if room.play == "turn_on" %} selected {% endif %}>Turn on</option>
+                        <option value="turn_off" {% if room.play == "turn_off" %} selected {% endif %}>Turn off</option>
+                        <option value="dim" {% if room.play == "dim" %} selected {% endif %}>Dim</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="pause">Pause action</label>
+                      <select class="custom-select my-1 mr-sm-2" id="pause" name="pause">
+                        <option value="nothing" {% if room.pause == "nothing" %} selected {% endif %}>Nothing</option>
+                        <option value="turn_on" {% if room.pause == "turn_on" %} selected {% endif %}>Turn on</option>
+                        <option value="turn_off" {% if room.pause == "turn_off" %} selected {% endif %}>Turn off</option>
+                        <option value="dim" {% if room.pause == "dim" %} selected {% endif %}>Dim</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="resume">Resume action</label>
+                      <select class="custom-select my-1 mr-sm-2" id="resume" name="resume">
+                        <option value="nothing" {% if room.resume == "nothing" %} selected {% endif %}>Nothing</option>
+                        <option value="turn_on" {% if room.resume == "turn_on" %} selected {% endif %}>Turn on</option>
+                        <option value="turn_off" {% if room.resume == "turn_off" %} selected {% endif %}>Turn off</option>
+                        <option value="dim" {% if room.resume == "dim" %} selected {% endif %}>Dim</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="stop">Stop action</label>
+                      <select class="custom-select my-1 mr-sm-2" id="stop" name="stop">
+                        <option value="nothing" {% if room.stop == "nothing" %} selected {% endif %}>Nothing</option>
+                        <option value="turn_on" {% if room.stop == "turn_on" %} selected {% endif %}>Turn on</option>
+                        <option value="turn_off" {% if room.stop == "turn_off" %} selected {% endif %}>Turn off</option>
+                        <option value="dim" {% if room.stop == "dim" %} selected {% endif %}>Dim</option>
+                      </select>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <label for="stop">Only trigger lights if currently playing media duration is greater than:</label>
+                      <select class="custom-select my-1 mr-sm-2" id="stop" name="stop">
+                        <option value="0" {% if room.duration == "0" %} selected {% endif %}>Disabled</option>
+                        <option value="0" {% if room.stop == "2100000" %} selected {% endif %}>35 minutes</option>
+                        <option value="0" {% if room.stop == "3600000" %} selected {% endif %}>1 hour</option>
+                        <option value="0" {% if room.stop == "nothing" %} selected {% endif %}>2 hours</option>
+                        <option value="0" {% if room.stop == "nothing" %} selected {% endif %}>Disabled</option>
+                        <option value="0" {% if room.stop == "nothing" %} selected {% endif %}>Disabled</option>
+                      </select>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <div class="form-group">
+                        <label for="dim_brightness">Brightness when dimming lights</label>
+                        <input class="form-control-range" type="range" id="dim_brightness"
+                          name="dim_brightness" value="{{ room.dim_brightness }}"
+                          min="1" max="254" step="1" list="tickmarks">
+                        <datalist id="tickmarks">
+                          <option value="1" label="0%">
+                          <option value="26">
+                          <option value="51">
+                          <option value="77">
+                          <option value="102">
+                          <option value="127" label="50%">
+                          <option value="152">
+                          <option value="177">
+                          <option value="202">
+                          <option value="227">
+                          <option value="254" label="100%">
+                      </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="hambisync" name="hambisync" value="true" {% if room.hambisync %} checked {% endif %}>
+                        <label class="form-check-label" for="hambisync">Start and stop HAmbiSync with media</label>
+                      </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="night_mode" name="night_mode" value="true" {% if room.night_mode %} checked {% endif %}>
+                        <label class="form-check-label" for="night_mode">Trigger only at night</label>
+                      </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="active" name="active" value="true" {% if room.active %} checked {% endif %}>
+                        <label class="form-check-label" for="active">Activate this room</label>
+                      </div>
+                    </div>
+                  </div>
+                  <hr class="mb-4">
+                  <button class="btn btn-primary btn-lg btn-block" type="submit">Save room</button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">Designed and built with all the love in the world</p>
+        <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://www.paypal.com/donate/?token=oYwgHY6hDMA7SQdvW_ShVwmyTYbI9JdjW64BPnKOW_5jdNfO2yXgn9WKh7f23czpi1Fea0&country.x=FR&locale.x=FR" target="_blank">Donate</a></li>
+        </ul>
+      </footer>
+
+    </div>
+  </body>
+  <script>
+    {% for room in config.rooms %}
+      $('#lights{{ room.id }}').selectpicker('val', {{ room.lights }});
+      $('#groups{{ room.id }}').selectpicker('val', {{ room.groups }});
+    {% endfor %}
+
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    });
+
+    $('a[href="'+window.location.hash+'"]').tab('show');
+  </script>
+</html>
