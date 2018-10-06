@@ -140,7 +140,8 @@ router.post('/connect', function (req, res) {
                 username: user.username,
                 host: req.body.host
             }).write();
-            return hue.authenticate();
+            hue.authenticate();
+            return hue.bridge.isAuthenticated();
         })
         .then(() => {
             hue.authentication.status = 'success';
