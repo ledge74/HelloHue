@@ -13,14 +13,10 @@ function processWebhook(payload) {
         return false;
     }
 
-    let activeRooms = db.get('rooms').value()
-        .filter(room => room.active === true);
+    let matchingRooms = db.get('rooms').value()
+        .filter(room => room.active === true && room.player === payload.Player.title);
 
-    activeRooms.forEach(room => {
-
-        if (!isInRoom(payload, room)) {
-            return false;
-        }
+    matchingRooms.forEach(room => {
 
         if (!isUserAuthorized(payload, room)) {
             return false;
@@ -155,15 +151,6 @@ function isHelloHueActive() {
     return true;
 };
 
-function isInRoom(payload, room) {
-    if (room.player === payload.Player.title) {
-        return true;
-    }
-
-    logger.info('Player %s is not in room %s, aborting webhook processing', room.player, room.name);
-    return false;
-};
-
 function isUserAuthorized(payload, room) {
     if (room.users.length === 0) {
         return true;
@@ -211,16 +198,17 @@ function compareDuration(payload, room) {
 
     plex.client.query(payload.Metadata.key).then(function (result) {
         duration = result.MediaContainer.Metadata[0].duration;
-
-        if (duration >= room.min_duration) {
-            logger.info('Minimun duration is greater than media duration in room %s, continuing webhook processing', room['name']);
-            return true;
-        } else {
+        
+        if (duration <= room.min_duration) {
             logger.info('Minimun duration is less than media duration in room %s, aborting webhook processing', room['name']);
             return false;
+        } else {
+            logger.info('Minimun duration is greater than media duration in room %s, continuing webhook processing', room['name']);
+            return true;
         }
     }, function (err) {
-        return false;
+        logger.error('Error getting media duration: %j', err)
+        return true;
     });
 };
 

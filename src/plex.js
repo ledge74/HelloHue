@@ -19,11 +19,9 @@ authenticate();
 
 function isAuthenticated() {
     client.query("/").then(function (result) {
-        console.log("succes");
         authentication.status = 'success';
         authentication.isAuthenticated = true;
     }, function (err) {
-        console.log("error")
         authentication.status = 'error';
         authentication.isAuthenticated = false;
     });
