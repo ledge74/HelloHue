@@ -188,11 +188,8 @@ function isItDark(room) {
 function compareDuration(payload, room) {
 
     if (room.min_duration === 0) {
-        logger.info('Minimun duration is disabled in room %s, continuing webhook processing', room['name']);
         return true;
     }
-
-    logger.info('Minimun duration is enabled in room %s, continuing webhook processing', room['name']);
 
     let duration;
 
@@ -203,7 +200,6 @@ function compareDuration(payload, room) {
             logger.info('Minimun duration is less than media duration in room %s, aborting webhook processing', room['name']);
             return false;
         } else {
-            logger.info('Minimun duration is greater than media duration in room %s, continuing webhook processing', room['name']);
             return true;
         }
     }, function (err) {
