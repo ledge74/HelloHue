@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const huejay = require('huejay');
 const hue = require('../src/hue');
+const plex = require('../src/plex');
 const db = require('../src/db');
 const logger = require('../src/logger');
 
@@ -15,6 +16,7 @@ router.post('/room/:id', function (req, res) {
     let users = [];
     let lights = [];
     let groups = [];
+    let min_duration = 0;
 
     if (req.body.hambisync) {
         hambisync = true;
@@ -52,6 +54,10 @@ router.post('/room/:id', function (req, res) {
         dim_brightness = parseInt(req.body.dim_brightness);
     }
 
+    if (req.body.min_duration) {
+        min_duration = parseInt(req.body.min_duration);
+    }
+
     const room = {
         name: req.body.name.trim(),
         player: req.body.player.trim(),
@@ -65,7 +71,8 @@ router.post('/room/:id', function (req, res) {
         groups,
         lights,
         users,
-        dim_brightness
+        dim_brightness,
+        min_duration
     };
 
     db.get('rooms')
@@ -91,6 +98,23 @@ router.post('/location', function (req, res) {
     db.set('location', coordinates).write();
     req.flash('success', 'Location saved !');
     res.redirect('/#form-location');
+});
+
+router.post('/plex', function (req, res) {
+    let plexConfig = {
+        host: "",
+        token: ""
+    }
+
+    if (req.body.host && req.body.token) {
+        plexConfig.host = req.body.host;
+        plexConfig.token = req.body.token;
+    }
+    db.set('plex', plexConfig).write();
+    plex.authenticate();
+    plex.isAuthenticated();
+    req.flash('success', 'Plex saved !');
+    res.redirect('/#form-plex');
 });
 
 router.post('/hambisync', function (req, res) {

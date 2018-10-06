@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const hue = require('../src/hue');
+const plex = require('../src/plex');
 const db = require('../src/db');
 const logger = require('../src/logger');
 const status = require('../src/status');
@@ -34,9 +35,13 @@ router.get('/', function (req, res) {
                     rooms: db.get('rooms').value(),
                     hue: db.get('hue').value(),
                     location: db.get('location').value(),
+                    plex: db.get('plex').value(),
                     hambisync: db.get('hambisync').value()
                 },
-                auth: hue.authentication,
+                auth: {
+                    hue: hue.authentication,
+                    plex: plex.authentication
+                },
                 hellohue: {
                     status: status.getStatus()
                 },

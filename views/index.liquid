@@ -65,7 +65,11 @@
           <div class="list-group" id="list-tab" role="tablist">
             <a class="list-group-item list-group-item-action active d-flex justify-content-between align-items-center" id="list-home-list" data-toggle="list" href="#form-hue" role="tab" aria-controls="home">
               Hue bridge
-              <span class="badge badge-{% if auth.isAuthenticated %}success{% else %}danger{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if auth.isAuthenticated %}Hue bridge connected{% else %}Hue bridge not reachable{% endif %}"> </span>
+              <span class="badge badge-{% if auth.hue.isAuthenticated %}success{% else %}danger{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if auth.hue.isAuthenticated %}Hue bridge connected{% else %}Hue bridge not reachable{% endif %}"> </span>
+            </a>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" id="list-home-list" data-toggle="list" href="#form-plex" role="tab" aria-controls="home">
+              Plex
+              <span class="badge badge-{% if auth.plex.isAuthenticated %}success{% else %}danger{% endif %} badge-pill badge-custom" data-toggle="tooltip" data-placement="right" title="{% if plex.auth.isAuthenticated %}Plex connected{% else %}Plex not reachable{% endif %}"> </span>
             </a>
             <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" id="list-profile-list" data-toggle="list" href="#form-location" role="tab" aria-controls="profile">
               Location
@@ -118,6 +122,26 @@
                 </div>
                 <button class="btn btn-primary btn-lg btn-block" type="submit">Connect to Hue bridge</button>
               </form>         
+            </div>
+            <div class="tab-pane fade card card-body" id="form-plex" role="tabpanel" aria-labelledby="list-profile-list">
+              <form action="/config/plex" method="POST">
+                <h4 class="mb-3">Plex</h4>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="latitude">Host</label>
+                    <input type="text" class="form-control" id="host" name="host" placeholder="127.0.0.1" value="{{ config.plex.host }}" pattern="((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="longitude">Token</label>
+                    <input type="text" class="form-control" id="token" name="token" placeholder="kn7bfeh8fnezN" value="{{ config.plex.token }}">
+                    <small class="form-text text-muted">
+                      <a target="_blank" href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/">Read this</a> to find your Plex Token
+                    </small>
+                  </div>
+                </div>
+                <hr class="mb-4">
+                <button class="btn btn-primary btn-lg btn-block" type="submit">Save Plex</button>
+              </form>      
             </div>
             <div class="tab-pane fade card card-body" id="form-location" role="tabpanel" aria-labelledby="list-profile-list">
               <form action="/config/location" method="POST">
@@ -226,6 +250,17 @@
                         <option value="turn_on" {% if room.stop == "turn_on" %} selected {% endif %}>Turn on</option>
                         <option value="turn_off" {% if room.stop == "turn_off" %} selected {% endif %}>Turn off</option>
                         <option value="dim" {% if room.stop == "dim" %} selected {% endif %}>Dim</option>
+                      </select>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <label for="stop">Minimum media duration</label>
+                      <select class="custom-select my-1 mr-sm-2" id="min_duration" name="min_duration">
+                        <option value="0" {% if room.min_duration == 0 %} selected {% endif %}>Disabled</option>
+                        <option value="1800000" {% if room.min_duration == 1800000 %} selected {% endif %}>30 minutes</option>
+                        <option value="3600000" {% if room.min_duration == 3600000 %} selected {% endif %}>1 hour</option>
+                        <option value="4800000" {% if room.min_duration == 4800000 %} selected {% endif %}>1 hour 20 minutes</option>
+                        <option value="6000000" {% if room.min_duration == 6000000 %} selected {% endif %}>1 hour 40 minutes</option>
+                        <option value="7200000" {% if room.min_duration == 7200000 %} selected {% endif %}>2 hours</option>
                       </select>
                     </div>
                     <div class="col-md-12 mb-3">

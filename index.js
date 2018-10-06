@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const flash = require('express-flash');
 const cookieParser = require('cookie-parser');
-const morgan = require('morgan');
 const logger = require('./src/logger');
 
 let engine = Liquid({
@@ -30,7 +29,6 @@ app.use(cookieParser('secret'));
 app.use(flash());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(morgan('dev'))
 app.use(require('./routes'));
 app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js'));
 app.use('/js', express.static(__dirname + '/node_modules/jquery/dist'));

@@ -3,6 +3,7 @@ const SunCalc = require('suncalc');
 const db = require('./db');
 const hambisync = require('./hambisync');
 const hue = require('./hue');
+const plex = require('./plex');
 const logger = require('./logger');
 const status = require('./status');
 
@@ -12,10 +13,10 @@ function processWebhook(payload) {
         return false;
     }
 
-    db.get('rooms').value().forEach(room => {
-        if(!isRoomActive(room)) {
-            return false;
-        }
+    let activeRooms = db.get('rooms').value()
+        .filter(room => room.active === true);
+
+    activeRooms.forEach(room => {
 
         if (!isInRoom(payload, room)) {
             return false;
@@ -29,12 +30,16 @@ function processWebhook(payload) {
             return false
         }
 
+        if (!compareDuration(payload, room)) {
+            return false;
+        }
+
         let event = getEvent(payload.event);
 
         if (!event) {
             logger.info('%s in not a supported event, aborting webhook processing', payload.event);
             return false;
-        } 
+        }
 
         let action = room[event];
 
@@ -123,8 +128,6 @@ function triggerHambisync(event, room) {
         return false;
     }
 
-    logger.info('Ambisync in enabled in room %s', room['name']);
-
     switch (event) {
         case 'play':
             hambisync.start();
@@ -132,11 +135,11 @@ function triggerHambisync(event, room) {
         case 'stop':
             hambisync.stop();
             break;
-    
+
         default:
             return false;
     }
-    
+
     return true;
 }
 
@@ -149,23 +152,11 @@ function isHelloHueActive() {
         return false;
     }
 
-    logger.info('HelloHue is active, continuing webhook processing');
     return true;
 };
 
-function isRoomActive(room) {
-    if (room['active']) {
-        logger.info('Room %s is active, continuing webhook processing', room['name']);
-        return true;
-    }
-
-    logger.info('Room %s is inactive, aborting webhook processing', room['name']);
-    return false;
-}
-
 function isInRoom(payload, room) {
     if (room.player === payload.Player.title) {
-        logger.info('Player %s is in room %s, continuing webhook processing', room.player, room.name);
         return true;
     }
 
@@ -175,42 +166,64 @@ function isInRoom(payload, room) {
 
 function isUserAuthorized(payload, room) {
     if (room.users.length === 0) {
-        logger.info('Room %s is authorizing any user, continuing webhook processing', room['name']);
         return true;
     }
-    
+
     if (!room.users.includes(payload.Account.title)) {
         logger.info('User %s is not in room %s, aborting webhook processing', payload.Account.title, room['name'])
         return false;
     }
 
-    logger.info('User %s is in room %s, continuing webhook processing', payload.Account.title, room['name']);
     return true;
 }
 
 function isItDark(room) {
     if (!room["night_mode"]) {
-        logger.info('Night mode is disabled in room %s, continuing webhook processing', room['name']);
         return true;
     }
 
     const location = db.get('location').value();
 
-    if (!location.latitude || !location.longitude) {
-        logger.info('Night mode is not configured in room %s, continuing webhook processing', room['name']);
+    if (!location.latitude ||  !location.longitude) {
         return true;
     }
 
     const now = moment();
-    const times = SunCalc.getTimes(now,  location.latitude,  location.longitude);
+    const times = SunCalc.getTimes(now, location.latitude, location.longitude);
     if (now > times.sunrise && now < times.sunset) {
         logger.info('Sun is shining in room %s (now: %s, sunrise: %s, sunset: %s), aborting webhook processing', room['name'], now, times.sunrise, times.sunset);
         return false;
     }
 
-    logger.info('Night is dark and full of terror in room %s (now: %s, sunrise: %s, sunset: %s), continuing webhook processing', room['name'], now, times.sunrise, times.sunset);
     return true;
 };
+
+function compareDuration(payload, room) {
+
+    if (room.min_duration === 0) {
+        logger.info('Minimun duration is disabled in room %s, continuing webhook processing', room['name']);
+        return true;
+    }
+
+    logger.info('Minimun duration is enabled in room %s, continuing webhook processing', room['name']);
+
+    let duration;
+
+    plex.client.query(payload.Metadata.key).then(function (result) {
+        duration = result.MediaContainer.Metadata[0].duration;
+
+        if (duration >= room.min_duration) {
+            logger.info('Minimun duration is greater than media duration in room %s, continuing webhook processing', room['name']);
+            return true;
+        } else {
+            logger.info('Minimun duration is less than media duration in room %s, aborting webhook processing', room['name']);
+            return false;
+        }
+    }, function (err) {
+        return false;
+    });
+};
+
 
 function getEvent(plexEvent) {
 

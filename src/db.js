@@ -19,7 +19,8 @@ db.defaults({
             "groups": [],
             "dim_brightness": 127,
             "hambisync": false,
-            "night_mode": false
+            "night_mode": false,
+            "min_duration": 0
         },
         {
             "id": 2,
@@ -35,7 +36,8 @@ db.defaults({
             "groups": [],
             "dim_brightness": 127,
             "hambisync": false,
-            "night_mode": false
+            "night_mode": false,
+            "min_duration": 0
         },
         {
             "id": 3,
@@ -51,7 +53,8 @@ db.defaults({
             "groups": [],
             "dim_brightness": 127,
             "hambisync": false,
-            "night_mode": false
+            "night_mode": false,
+            "min_duration": 0
         },
         {
             "id": 4,
@@ -67,7 +70,8 @@ db.defaults({
             "groups": [],
             "dim_brightness": 127,
             "hambisync": false,
-            "night_mode": false
+            "night_mode": false,
+            "min_duration": 0
         },
         {
             "id": 5,
@@ -83,7 +87,8 @@ db.defaults({
             "groups": [],
             "dim_brightness": 127,
             "hambisync": false,
-            "night_mode": false
+            "night_mode": false,
+            "min_duration": 0
         }
     ],
     "hue": {
@@ -93,6 +98,10 @@ db.defaults({
     "location": {
         "latitude": "",
         "longitude": ""
+    },
+    "plex": {
+        "host": "",
+        "token": ""
     },
     "hambisync": {
         "host": "",

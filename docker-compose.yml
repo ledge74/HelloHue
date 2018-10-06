@@ -10,4 +10,4 @@ services:
     ports:
       - "4568:4568"
     environment:
-      - TZ=Europe/paris
+      - TZ=Europe/Paris
