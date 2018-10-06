@@ -229,17 +229,6 @@
                       </select>
                     </div>
                     <div class="col-md-12 mb-3">
-                      <label for="stop">Only trigger lights if currently playing media duration is greater than:</label>
-                      <select class="custom-select my-1 mr-sm-2" id="stop" name="stop">
-                        <option value="0" {% if room.duration == "0" %} selected {% endif %}>Disabled</option>
-                        <option value="0" {% if room.stop == "2100000" %} selected {% endif %}>35 minutes</option>
-                        <option value="0" {% if room.stop == "3600000" %} selected {% endif %}>1 hour</option>
-                        <option value="0" {% if room.stop == "nothing" %} selected {% endif %}>2 hours</option>
-                        <option value="0" {% if room.stop == "nothing" %} selected {% endif %}>Disabled</option>
-                        <option value="0" {% if room.stop == "nothing" %} selected {% endif %}>Disabled</option>
-                      </select>
-                    </div>
-                    <div class="col-md-12 mb-3">
                       <div class="form-group">
                         <label for="dim_brightness">Brightness when dimming lights</label>
                         <input class="form-control-range" type="range" id="dim_brightness"
