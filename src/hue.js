@@ -25,12 +25,10 @@ async function isAuthenticated() {
     await client.bridge.isAuthenticated();
     authentication.status = 'success';
     authentication.isAuthenticated = true;
-    console.log('ok connected')
     return true;
   } catch(e) {
     authentication.status = 'error';
     authentication.isAuthenticated = false;
-    console.log('nok')
     return false;
   }
 }
