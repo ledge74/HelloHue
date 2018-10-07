@@ -20,15 +20,22 @@ function authenticate() {
 
 authenticate();
 
-client.bridge.isAuthenticated()
-  .then(() => {
+async function isAuthenticated() {
+  try {
+    await client.bridge.isAuthenticated();
     authentication.status = 'success';
     authentication.isAuthenticated = true;
-  })
-  .catch(error => {
+    console.log('ok connected')
+    return true;
+  } catch(e) {
     authentication.status = 'error';
     authentication.isAuthenticated = false;
-  });
+    console.log('nok')
+    return false;
+  }
+}
+
+isAuthenticated();
 
 function createUser(ip) {
 
@@ -49,5 +56,6 @@ module.exports = {
   client,
   authentication,
   authenticate,
+  isAuthenticated,
   createUser
 }

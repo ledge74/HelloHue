@@ -141,7 +141,7 @@ router.post('/connect', function (req, res) {
                 host: req.body.host
             }).write();
             hue.authenticate();
-            return hue.bridge.isAuthenticated();
+            return hue.isAuthenticated();
         })
         .then(() => {
             hue.authentication.status = 'success';
@@ -156,6 +156,10 @@ router.post('/connect', function (req, res) {
                 logger.error(error.stack);
                 req.flash('error', 'There was an error connecting to Hue bridge (wrong or unreachable host?)');
             }
+            db.set('hue', {
+                username: "",
+                host: ""
+            }).write();
             hue.authentication.status = 'error';
             hue.authentication.isAuthenticated = false;
         })
