@@ -6,6 +6,10 @@
 
  - A Plex Pass subscription
  - A computer with Git / Node 8 / NPM 5 (alternatively, a Docker image is available)
+ 
+### Warning
+
+This app is the standalone equivalent of the [HelloHue.bundle](https://github.com/ledge74/HelloHue.bundle) Plex Plugin. This is not a Plex Plugin, as Plugins will be deprecated soon.
 
 ### Behavior
 
